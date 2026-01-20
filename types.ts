@@ -8,3 +8,10 @@ export interface PopoverState {
     left: number;
   } | null;
 }
+
+export interface SavedWord {
+  text: string;
+  translation: string;
+  sourceLang: string;
+  targetLang: string;
+}

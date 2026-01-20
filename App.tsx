@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { PopoverState } from './types';
+import { PopoverState, SavedWord } from './types';
 import { parseFile } from './utils/fileUtils';
 import { getTranslation } from './services/translationService';
 import * as authService from './services/authService';
@@ -10,6 +10,8 @@ import DocumentViewer from './components/DocumentViewer';
 import TranslationPopover from './components/TranslationPopover';
 import LanguageSelector from './components/LanguageSelector';
 import AuthModal from './components/AuthModal';
+import WordBankModal from './components/WordBankModal';
+import { BookOpenIcon } from './components/icons';
 
 const App: React.FC = () => {
     const [file, setFile] = useState<File | null>(null);
@@ -27,6 +29,8 @@ const App: React.FC = () => {
     });
     const [currentUser, setCurrentUser] = useState<string | null>(null);
     const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+    const [isWordBankOpen, setIsWordBankOpen] = useState<boolean>(false);
+    const [wordBank, setWordBank] = useState<SavedWord[]>([]);
 
     const mainRef = useRef<HTMLElement>(null);
     const viewerRef = useRef<HTMLDivElement>(null);
@@ -139,6 +143,7 @@ const App: React.FC = () => {
     const handleLoginSuccess = (userEmail: string) => {
         setCurrentUser(userEmail);
         setIsAuthModalOpen(false);
+        setWordBank(dataService.getWordBank(userEmail));
         const progress = dataService.loadProgress(userEmail);
         if (progress && window.confirm("You have saved progress. Would you like to restore it?")) {
             setContent(progress.fileContent);
@@ -155,6 +160,7 @@ const App: React.FC = () => {
     const handleLogout = () => {
         authService.logOut();
         setCurrentUser(null);
+        setWordBank([]);
         handleReset();
     };
 
@@ -175,6 +181,23 @@ const App: React.FC = () => {
         }, 1500);
     };
 
+    const handleSaveWord = (text: string, translation: string) => {
+        if (!currentUser) return;
+        const newWord = { text, translation, sourceLang: sourceLanguage, targetLang: targetLanguage };
+        const updatedBank = dataService.saveWordToBank(currentUser, newWord);
+        setWordBank(updatedBank);
+    };
+
+    const handleRemoveWord = (text: string) => {
+        if (!currentUser) return;
+        const updatedBank = dataService.removeWordFromBank(currentUser, text);
+        setWordBank(updatedBank);
+    };
+
+    const isWordInBank = (text: string) => {
+        return wordBank.some(w => w.text.toLowerCase() === text.toLowerCase());
+    };
+
     return (
         <div className="min-h-screen font-sans text-slate-800 flex flex-col">
             <header className="bg-white shadow-sm sticky top-0 z-20">
@@ -185,6 +208,9 @@ const App: React.FC = () => {
                             {currentUser ? (
                                 <>
                                     <span className="text-sm text-slate-600 hidden md:block">Welcome, {currentUser}</span>
+                                    <button onClick={() => setIsWordBankOpen(true)} className="p-2 bg-slate-100 text-slate-600 rounded-md hover:bg-slate-200" aria-label="Open Word Bank">
+                                        <BookOpenIcon className="w-5 h-5" />
+                                    </button>
                                     <button onClick={handleLogout} className="px-4 py-2 bg-slate-600 text-white rounded-md hover:bg-slate-700 text-sm">Logout</button>
                                 </>
                             ) : (
@@ -227,17 +253,20 @@ const App: React.FC = () => {
                 
                 {content && <DocumentViewer content={content} scrollRef={viewerRef} onScroll={handleScroll} />}
 
-                {popover.position && popover.text && (
+                {popover.position && popover.text && popover.translation && (
                     <TranslationPopover
                         text={popover.text}
                         translation={popover.translation}
                         isLoading={popover.isLoading}
                         position={popover.position}
                         onClose={handleClosePopover}
+                        onSave={handleSaveWord}
+                        isSaved={isWordInBank(popover.text)}
                     />
                 )}
             </main>
             {isAuthModalOpen && <AuthModal onClose={() => setIsAuthModalOpen(false)} onAuthSuccess={handleLoginSuccess} />}
+            {isWordBankOpen && <WordBankModal words={wordBank} onRemove={handleRemoveWord} onClose={() => setIsWordBankOpen(false)} />}
         </div>
     );
 };
