@@ -1,28 +1,47 @@
 
-import { GoogleGenAI } from "@google/genai";
-
-const API_KEY = process.env.API_KEY;
-
-if (!API_KEY) {
-    throw new Error("API_KEY environment variable is not set.");
+interface DictionaryAPIResponse {
+    word: string;
+    phonetic?: string;
+    phonetics: {
+        text: string;
+        audio?: string;
+    }[];
+    origin?: string;
+    meanings: {
+        partOfSpeech: string;
+        definitions: {
+            definition: string;
+            example?: string;
+            synonyms: string[];
+            antonyms: string[];
+        }[];
+    }[];
 }
-
-const ai = new GoogleGenAI({ apiKey: API_KEY });
 
 export const getDefinition = async (word: string): Promise<string> => {
     try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-3-flash-preview',
-            contents: `Define the word "${word}" in a clear and concise way for someone learning new vocabulary.`,
-        });
+        const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
 
-        if (response.text) {
-            return response.text;
-        } else {
-            return "No definition found.";
+        if (!response.ok) {
+            if (response.status === 404) {
+                return `No definition found for "${word}".`;
+            }
+            throw new Error(`Failed to fetch definition. Status: ${response.status}`);
         }
+
+        const data: DictionaryAPIResponse[] = await response.json();
+
+        if (data && data.length > 0 && data[0].meanings && data[0].meanings.length > 0) {
+            const firstMeaning = data[0].meanings[0];
+            if (firstMeaning.definitions && firstMeaning.definitions.length > 0) {
+                return `(${firstMeaning.partOfSpeech}) ${firstMeaning.definitions[0].definition}`;
+            }
+        }
+
+        return `No definition found for "${word}".`;
+
     } catch (error) {
-        console.error("Error fetching definition from Gemini API:", error);
-        throw new Error("Could not fetch definition. Please check your API key and connection.");
+        console.error("Error fetching definition from Dictionary API:", error);
+        throw new Error("Could not fetch definition. Please check your connection.");
     }
 };
