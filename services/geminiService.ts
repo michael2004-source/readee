@@ -18,13 +18,13 @@ interface DictionaryAPIResponse {
     }[];
 }
 
-export const getDefinition = async (word: string): Promise<string> => {
+export const getDefinition = async (word: string, language: string): Promise<string> => {
     try {
-        const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+        const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/${language}/${word}`);
 
         if (!response.ok) {
             if (response.status === 404) {
-                return `No definition found for "${word}".`;
+                return `No definition found for "${word}" in the selected language.`;
             }
             throw new Error(`Failed to fetch definition. Status: ${response.status}`);
         }
@@ -38,7 +38,7 @@ export const getDefinition = async (word: string): Promise<string> => {
             }
         }
 
-        return `No definition found for "${word}".`;
+        return `No definition found for "${word}" in the selected language.`;
 
     } catch (error) {
         console.error("Error fetching definition from Dictionary API:", error);

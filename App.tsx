@@ -6,12 +6,14 @@ import { getDefinition } from './services/geminiService';
 import FileUpload from './components/FileUpload';
 import DocumentViewer from './components/DocumentViewer';
 import DefinitionPopover from './components/DefinitionPopover';
+import LanguageSelector from './components/LanguageSelector';
 
 const App: React.FC = () => {
     const [file, setFile] = useState<File | null>(null);
     const [content, setContent] = useState<string>('');
     const [isParsing, setIsParsing] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const [language, setLanguage] = useState<string>('en');
     const [popover, setPopover] = useState<PopoverState>({
         word: null,
         definition: null,
@@ -46,7 +48,7 @@ const App: React.FC = () => {
         const fetchDefinition = async () => {
             if (popover.word && popover.isLoading) {
                 try {
-                    const definitionText = await getDefinition(popover.word);
+                    const definitionText = await getDefinition(popover.word, language);
                     setPopover(p => p.word ? { ...p, definition: definitionText, isLoading: false } : p);
                 } catch (err) {
                      const errorMessage = err instanceof Error ? `Failed to fetch definition: ${err.message}` : 'An unknown error occurred.';
@@ -57,7 +59,7 @@ const App: React.FC = () => {
         };
 
         fetchDefinition();
-    }, [popover.word, popover.isLoading]);
+    }, [popover.word, popover.isLoading, language]);
 
     const handleFileChange = (selectedFile: File | null) => {
         if (selectedFile) {
@@ -89,20 +91,31 @@ const App: React.FC = () => {
         setPopover({ word: null, definition: null, isLoading: false, position: null });
     }, []);
 
+    const handleLanguageChange = (langCode: string) => {
+        setLanguage(langCode);
+        if (popover.word) {
+            // Trigger a refetch for the current word in the new language
+            setPopover(p => ({ ...p, isLoading: true, definition: null }));
+        }
+    };
+
     return (
         <div className="min-h-screen font-sans text-slate-800">
             <header className="bg-white shadow-sm sticky top-0 z-20">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center py-4">
                         <h1 className="text-2xl font-bold text-slate-700">Interactive Reader</h1>
-                        {file && (
-                            <button
-                                onClick={handleReset}
-                                className="px-4 py-2 bg-slate-600 text-white rounded-md hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
-                            >
-                                Load New Document
-                            </button>
-                        )}
+                        <div className="flex items-center space-x-4">
+                            <LanguageSelector selectedLanguage={language} onLanguageChange={handleLanguageChange} />
+                            {file && (
+                                <button
+                                    onClick={handleReset}
+                                    className="px-4 py-2 bg-slate-600 text-white rounded-md hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
+                                >
+                                    Load New Document
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
             </header>
