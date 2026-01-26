@@ -17,44 +17,44 @@ const WordBankSection: React.FC<WordBankSectionProps> = ({ words, onRemove }) =>
     );
 
     return (
-        <div className="max-w-4xl mx-auto w-full bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="p-6 border-b border-slate-100">
+        <div className="max-w-4xl mx-auto w-full bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
+            <div className="p-6 border-b border-stone-100">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <h2 className="text-xl font-bold text-slate-800">My Vocabulary Bank</h2>
+                    <h2 className="text-xl font-bold text-stone-800">My Vocabulary Bank</h2>
                     <div className="relative">
-                        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
                         <input 
                             type="text" 
                             placeholder="Search words..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none w-full md:w-64"
+                            className="pl-10 pr-4 py-2 bg-stone-50 border border-stone-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none w-full md:w-64"
                         />
                     </div>
                 </div>
             </div>
 
-            <div className="divide-y divide-slate-100 max-h-[600px] overflow-y-auto">
+            <div className="divide-y divide-stone-100 max-h-[600px] overflow-y-auto">
                 {filteredWords.length === 0 ? (
-                    <div className="p-12 text-center text-slate-500">
+                    <div className="p-12 text-center text-stone-500">
                         {searchQuery ? 'No matches found for your search.' : 'Your word bank is empty. Save words from the reader to see them here!'}
                     </div>
                 ) : (
                     filteredWords.map((word) => (
-                        <div key={word.timestamp} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors group">
+                        <div key={word.timestamp} className="p-4 flex items-center justify-between hover:bg-stone-50 transition-colors group">
                             <div className="flex-grow">
                                 <div className="flex items-center gap-2 mb-1">
-                                    <span className="font-bold text-slate-800">{word.text}</span>
-                                    <span className="text-xs font-medium text-slate-400 uppercase bg-slate-100 px-1.5 py-0.5 rounded">{word.sourceLang}</span>
+                                    <span className="font-bold text-stone-800">{word.text}</span>
+                                    <span className="text-xs font-medium text-stone-400 uppercase bg-stone-100 px-1.5 py-0.5 rounded">{word.sourceLang}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-blue-600 font-medium">{word.translation}</span>
-                                    <span className="text-xs font-medium text-blue-400 uppercase bg-blue-50 px-1.5 py-0.5 rounded">{word.targetLang}</span>
+                                    <span className="text-emerald-700 font-medium">{word.translation}</span>
+                                    <span className="text-xs font-medium text-emerald-600 uppercase bg-emerald-50 px-1.5 py-0.5 rounded">{word.targetLang}</span>
                                 </div>
                             </div>
                             <button 
                                 onClick={() => onRemove(word.text)}
-                                className="p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
+                                className="p-2 text-stone-300 hover:text-red-700 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
                             >
                                 <TrashIcon className="w-5 h-5" />
                             </button>
@@ -63,8 +63,8 @@ const WordBankSection: React.FC<WordBankSectionProps> = ({ words, onRemove }) =>
                 )}
             </div>
             
-            <div className="p-4 bg-slate-50 border-t border-slate-100">
-                <p className="text-xs text-slate-400 text-center">{filteredWords.length} words saved</p>
+            <div className="p-4 bg-stone-50 border-t border-stone-100">
+                <p className="text-xs text-stone-400 text-center">{filteredWords.length} words saved</p>
             </div>
         </div>
     );

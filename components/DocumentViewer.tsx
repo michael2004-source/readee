@@ -37,7 +37,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = React.memo(({
             onPointerUp={onSelectionEnd}
             className="bg-white p-6 sm:p-8 md:p-12 rounded-lg shadow-md h-[calc(100vh-200px)] overflow-y-auto select-none touch-none"
         >
-             <article className="prose prose-slate max-w-none lg:prose-lg leading-relaxed">
+             <article className="prose prose-stone max-w-none lg:prose-lg leading-relaxed">
                 {tokens.map((token, index) => {
                     const isWhitespace = /^\s+$/.test(token);
                     if (isWhitespace) {
@@ -58,8 +58,8 @@ const DocumentViewer: React.FC<DocumentViewerProps> = React.memo(({
                             onPointerEnter={() => onWordPointerEnter(index)}
                             className={`cursor-pointer transition-colors duration-150 rounded px-0.5 -mx-0.5 ${
                                 selected 
-                                    ? 'bg-blue-500 text-white shadow-sm' 
-                                    : 'hover:bg-blue-50 text-slate-800'
+                                    ? 'bg-amber-200 text-stone-900 shadow-sm' 
+                                    : 'hover:bg-emerald-50 text-stone-800'
                             }`}
                         >
                             {token}

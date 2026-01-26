@@ -63,38 +63,38 @@ const TranslationPopover: React.FC<TranslationPopoverProps> = ({
         <div
             ref={popoverRef}
             style={popoverStyle}
-            className="w-80 max-w-sm bg-white rounded-lg shadow-2xl border border-slate-200"
+            className="w-80 max-w-sm bg-white rounded-lg shadow-2xl border border-stone-200"
             role="dialog"
             aria-modal="true"
         >
             <div className="p-4">
                 <div className="flex justify-between items-start mb-3">
-                     <p className="text-sm font-medium text-slate-500 italic truncate pr-2">"{text}"</p>
+                     <p className="text-sm font-medium text-stone-500 italic truncate pr-2">"{text}"</p>
                     <div className="flex items-center space-x-1">
                         <button 
                             onClick={handleSave} 
                             disabled={saved}
-                            className={`p-1 rounded-full ${saved ? 'text-blue-600' : 'text-slate-500 hover:bg-slate-100' } disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-400`}
+                            className={`p-1 rounded-full ${saved ? 'text-emerald-700' : 'text-stone-500 hover:bg-stone-100' } disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-emerald-400`}
                             aria-label={saved ? 'Saved' : 'Save to word bank'}
                         >
                             <BookmarkIcon className={`w-5 h-5 ${saved ? 'fill-current' : ''}`} />
                         </button>
-                        <button onClick={onClose} className="p-1 rounded-full hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
-                            <CloseIcon className="w-5 h-5 text-slate-500" />
+                        <button onClick={onClose} className="p-1 rounded-full hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-stone-400">
+                            <CloseIcon className="w-5 h-5 text-stone-500" />
                             <span className="sr-only">Close translation</span>
                         </button>
                     </div>
                 </div>
-                <div className="border-t border-slate-200 pt-3">
+                <div className="border-t border-stone-200 pt-3">
                     {isLoading ? (
                         <div className="flex items-center space-x-2">
-                            <div className="w-2 h-2 bg-slate-500 rounded-full animate-pulse" style={{ animationDelay: '0s' }}></div>
-                            <div className="w-2 h-2 bg-slate-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-                            <div className="w-2 h-2 bg-slate-500 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
-                            <span className="text-slate-500">Translating...</span>
+                            <div className="w-2 h-2 bg-stone-500 rounded-full animate-pulse" style={{ animationDelay: '0s' }}></div>
+                            <div className="w-2 h-2 bg-stone-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+                            <div className="w-2 h-2 bg-stone-500 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+                            <span className="text-stone-500">Translating...</span>
                         </div>
                     ) : (
-                        <p className="text-slate-700 font-semibold text-lg">{translation}</p>
+                        <p className="text-stone-800 font-semibold text-lg">{translation}</p>
                     )}
                 </div>
             </div>

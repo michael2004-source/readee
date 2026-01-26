@@ -27,13 +27,13 @@ const LANGUAGES = [
 const LanguageSelector: React.FC<LanguageSelectorProps> = ({ label, selectedLanguage, onLanguageChange }) => {
     return (
         <div className="flex items-center space-x-2">
-            {label && <label htmlFor={`language-select-${label}`} className="text-sm font-medium text-slate-600 shrink-0">{label}</label>}
-            <GlobeIcon className="w-5 h-5 text-slate-500" aria-hidden="true" />
+            {label && <label htmlFor={`language-select-${label}`} className="text-sm font-medium text-stone-600 shrink-0">{label}</label>}
+            <GlobeIcon className="w-4 h-4 text-stone-400" aria-hidden="true" />
             <select
                 id={`language-select-${label}`}
                 value={selectedLanguage}
                 onChange={(e) => onLanguageChange(e.target.value)}
-                className="bg-white border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2"
+                className="bg-white border border-stone-200 text-stone-900 text-xs font-bold rounded-lg focus:ring-emerald-700 focus:border-emerald-700 block w-full p-1.5 transition-all"
             >
                 {LANGUAGES.map(({ code, name }) => (
                     <option key={code} value={code}>

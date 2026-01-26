@@ -56,7 +56,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect }) => {
                 onDragLeave={handleDragLeave}
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
-                className={`w-full max-w-2xl p-10 sm:p-20 border-2 border-dashed rounded-lg cursor-pointer text-center transition-colors duration-300 ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-slate-300 bg-white hover:border-slate-400 hover:bg-slate-50'}`}
+                className={`w-full max-w-2xl p-10 sm:p-20 border-2 border-dashed rounded-lg cursor-pointer text-center transition-colors duration-300 ${isDragging ? 'border-emerald-500 bg-emerald-50' : 'border-stone-300 bg-white hover:border-emerald-400 hover:bg-stone-50'}`}
             >
                 <input
                     type="file"
@@ -66,10 +66,10 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect }) => {
                     accept=".pdf,.epub"
                 />
                 <div className="flex flex-col items-center justify-center space-y-4">
-                    <UploadIcon className="w-16 h-16 text-slate-400" />
-                    <p className="text-xl font-semibold text-slate-600">Drag & drop your document here</p>
-                    <p className="text-slate-500">or click to browse</p>
-                    <p className="text-sm text-slate-400 mt-2">Supports PDF and EPUB files</p>
+                    <UploadIcon className="w-16 h-16 text-stone-400" />
+                    <p className="text-xl font-semibold text-stone-600">Drag & drop your document here</p>
+                    <p className="text-stone-500">or click to browse</p>
+                    <p className="text-sm text-stone-400 mt-2">Supports PDF and EPUB files</p>
                 </div>
             </div>
         </div>
