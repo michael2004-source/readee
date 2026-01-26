@@ -12,7 +12,8 @@ import TranslationPopover from './components/TranslationPopover';
 import ReaderSection from './components/ReaderSection';
 import WordBankSection from './components/WordBankSection';
 import VocabTrainerSection from './components/VocabTrainerSection';
-import { BookOpenIcon, BookmarkIcon, BrainIcon, GlobeIcon } from './components/icons';
+import SettingsSection from './components/SettingsSection';
+import { BookOpenIcon, BookmarkIcon, BrainIcon, GlobeIcon, SettingsIcon } from './components/icons';
 
 const App: React.FC = () => {
     // Auth & Navigation
@@ -178,10 +179,8 @@ const App: React.FC = () => {
     useEffect(() => {
         const fetchTranslation = async () => {
             if (popover.text) {
-                // If translationLanguage changes while popover is open, re-trigger loading
                 setPopover(p => ({ ...p, isLoading: true, translation: null }));
                 try {
-                    // sourceLang: from book language, targetLang: to native language
                     const trans = await getTranslation(popover.text, studyLanguage, translationLanguage);
                     setPopover(p => p.text ? { ...p, translation: trans, isLoading: false } : p);
                 } catch (err) {
@@ -243,59 +242,39 @@ const App: React.FC = () => {
     }, [isDragging, handleSelectionEnd]);
 
     return (
-        <div className="min-h-screen bg-stone-50 flex flex-col font-sans">
+        <div className="min-h-screen bg-stone-50 flex flex-col font-sans text-stone-900">
             {/* Header */}
             <header className="bg-white border-b border-stone-200 sticky top-0 z-30 shadow-sm">
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-emerald-700 rounded-lg flex items-center justify-center">
+                    <div className="flex items-center gap-2 cursor-pointer" onClick={() => setActiveSection('reader')}>
+                        <div className="w-9 h-9 bg-emerald-700 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-100">
                             <BookOpenIcon className="w-5 h-5 text-white" />
                         </div>
                         <div className="flex flex-col ml-1">
-                            <h1 className="text-lg font-bold text-stone-800 leading-tight hidden sm:block">Linguist Reader</h1>
+                            <h1 className="text-lg font-extrabold text-stone-800 leading-tight hidden sm:block tracking-tight">Linguist Reader</h1>
                             <div className="flex items-center gap-1.5">
-                                <span className="flex w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse"></span>
-                                <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{studyLanguage.toUpperCase()} Workspace</span>
+                                <span className="flex w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse"></span>
+                                <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{studyLanguage.toUpperCase()} MODE</span>
                             </div>
                         </div>
                     </div>
 
-                    <nav className="hidden md:flex items-center bg-stone-100 p-1 rounded-xl">
-                        <button onClick={() => setActiveSection('reader')} className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeSection === 'reader' ? 'bg-white text-emerald-700 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}>Reader</button>
-                        <button onClick={() => setActiveSection('wordbank')} className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeSection === 'wordbank' ? 'bg-white text-emerald-700 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}>Word Bank</button>
-                        <button onClick={() => setActiveSection('trainer')} className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeSection === 'trainer' ? 'bg-white text-emerald-700 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}>Practice</button>
+                    <nav className="hidden md:flex items-center bg-stone-100 p-1 rounded-2xl">
+                        <button onClick={() => setActiveSection('reader')} className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${activeSection === 'reader' ? 'bg-white text-emerald-700 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}>Library</button>
+                        <button onClick={() => setActiveSection('wordbank')} className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${activeSection === 'wordbank' ? 'bg-white text-emerald-700 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}>Word Bank</button>
+                        <button onClick={() => setActiveSection('trainer')} className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${activeSection === 'trainer' ? 'bg-white text-emerald-700 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}>Practice</button>
+                        <button onClick={() => setActiveSection('settings')} className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${activeSection === 'settings' ? 'bg-white text-emerald-700 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}>Settings</button>
                     </nav>
 
                     <div className="flex items-center gap-4">
-                        <div className="hidden lg:flex items-center gap-4 border-l border-stone-200 pl-4">
-                             <div className="flex items-center gap-2">
-                                <span className="text-xs font-bold text-stone-400 uppercase">Book Language</span>
-                                <LanguageSelector label="" selectedLanguage={studyLanguage} onLanguageChange={setStudyLanguage} />
-                             </div>
-                             <div className="flex items-center gap-2">
-                                <span className="text-xs font-bold text-stone-400 uppercase">Translate To</span>
-                                <LanguageSelector label="" selectedLanguage={translationLanguage} onLanguageChange={setTranslationLanguage} />
-                             </div>
-                        </div>
                         {currentUser ? (
-                            <button onClick={handleLogout} className="text-sm font-bold text-stone-500 hover:text-red-700 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-all">Logout</button>
+                            <div className="flex items-center gap-4">
+                                <span className="hidden lg:block text-xs font-bold text-stone-400 truncate max-w-[150px]">{currentUser}</span>
+                                <button onClick={handleLogout} className="text-sm font-bold text-stone-500 hover:text-red-700 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-all">Logout</button>
+                            </div>
                         ) : (
-                            <button onClick={() => setIsAuthModalOpen(true)} className="px-4 py-2 bg-emerald-700 text-white rounded-lg text-sm font-bold hover:bg-emerald-800 shadow-sm shadow-emerald-100">Sign In</button>
+                            <button onClick={() => setIsAuthModalOpen(true)} className="px-5 py-2 bg-emerald-700 text-white rounded-xl text-sm font-bold hover:bg-emerald-800 shadow-lg shadow-emerald-100 transition-all active:scale-95">Sign In</button>
                         )}
-                    </div>
-                </div>
-                
-                {/* Secondary Header for mobile context */}
-                <div className="bg-stone-50 border-t border-stone-200 lg:hidden overflow-x-auto no-scrollbar">
-                    <div className="container mx-auto px-4 h-12 flex items-center gap-6 whitespace-nowrap">
-                         <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-bold text-stone-400 uppercase">Studying:</span>
-                            <LanguageSelector label="" selectedLanguage={studyLanguage} onLanguageChange={setStudyLanguage} />
-                         </div>
-                         <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-bold text-stone-400 uppercase">To:</span>
-                            <LanguageSelector label="" selectedLanguage={translationLanguage} onLanguageChange={setTranslationLanguage} />
-                         </div>
                     </div>
                 </div>
             </header>
@@ -310,14 +289,14 @@ const App: React.FC = () => {
 
                 {activeSection === 'reader' && (
                     <div className="flex flex-col gap-6">
-                        {/* Quick Workspace Switcher */}
-                        {!activeDocId && (
+                        {/* Quick Workspace Switcher for active documents */}
+                        {!activeDocId && studiedLanguages.length > 1 && (
                             <div className="flex items-center gap-3 overflow-x-auto pb-2 no-scrollbar">
                                 {studiedLanguages.map(lang => (
                                     <button 
                                         key={lang}
                                         onClick={() => setStudyLanguage(lang)}
-                                        className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${studyLanguage === lang ? 'bg-emerald-700 text-white border-emerald-700' : 'bg-white text-stone-600 border-stone-200 hover:border-emerald-400'}`}
+                                        className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${studyLanguage === lang ? 'bg-emerald-700 text-white border-emerald-700 shadow-md shadow-emerald-50' : 'bg-white text-stone-600 border-stone-200 hover:border-emerald-400'}`}
                                     >
                                         {lang.toUpperCase()} Books
                                     </button>
@@ -348,7 +327,7 @@ const App: React.FC = () => {
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <BookmarkIcon className="w-5 h-5 text-emerald-700" />
-                                <h2 className="text-xl font-bold text-stone-800">{studyLanguage.toUpperCase()} Learned Vocabulary</h2>
+                                <h2 className="text-xl font-bold text-stone-800">{studyLanguage.toUpperCase()} Saved Words</h2>
                             </div>
                         </div>
                         <WordBankSection words={filteredWordBank} onRemove={handleRemoveWord} />
@@ -358,27 +337,40 @@ const App: React.FC = () => {
                 {activeSection === 'trainer' && (
                     <div className="flex flex-col gap-6">
                         <div className="text-center mb-4">
-                            <h2 className="text-2xl font-bold text-stone-800">Practice {studyLanguage.toUpperCase()}</h2>
-                            <p className="text-stone-500">Master the words you've encountered in your readings.</p>
+                            <h2 className="text-2xl font-bold text-stone-800">Review {studyLanguage.toUpperCase()}</h2>
+                            <p className="text-stone-500">Flashcards for your saved vocabulary.</p>
                         </div>
                         <VocabTrainerSection words={filteredWordBank} />
                     </div>
+                )}
+
+                {activeSection === 'settings' && (
+                    <SettingsSection 
+                        studyLanguage={studyLanguage}
+                        translationLanguage={translationLanguage}
+                        onStudyLanguageChange={setStudyLanguage}
+                        onTranslationLanguageChange={setTranslationLanguage}
+                    />
                 )}
             </main>
 
             {/* Mobile Bottom Navigation */}
             <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 z-40 px-6 h-16 flex items-center justify-between shadow-[0_-4px_10px_rgba(0,0,0,0.03)]">
-                <button onClick={() => setActiveSection('reader')} className={`flex flex-col items-center gap-1 ${activeSection === 'reader' ? 'text-emerald-700' : 'text-stone-400'}`}>
+                <button onClick={() => setActiveSection('reader')} className={`flex flex-col items-center gap-1 transition-colors ${activeSection === 'reader' ? 'text-emerald-700' : 'text-stone-400'}`}>
                     <BookOpenIcon className="w-6 h-6" />
-                    <span className="text-[10px] font-bold uppercase">Library</span>
+                    <span className="text-[10px] font-bold uppercase tracking-tighter">Library</span>
                 </button>
-                <button onClick={() => setActiveSection('wordbank')} className={`flex flex-col items-center gap-1 ${activeSection === 'wordbank' ? 'text-emerald-700' : 'text-stone-400'}`}>
+                <button onClick={() => setActiveSection('wordbank')} className={`flex flex-col items-center gap-1 transition-colors ${activeSection === 'wordbank' ? 'text-emerald-700' : 'text-stone-400'}`}>
                     <BookmarkIcon className="w-6 h-6" />
-                    <span className="text-[10px] font-bold uppercase">Bank</span>
+                    <span className="text-[10px] font-bold uppercase tracking-tighter">Bank</span>
                 </button>
-                <button onClick={() => setActiveSection('trainer')} className={`flex flex-col items-center gap-1 ${activeSection === 'trainer' ? 'text-emerald-700' : 'text-stone-400'}`}>
+                <button onClick={() => setActiveSection('trainer')} className={`flex flex-col items-center gap-1 transition-colors ${activeSection === 'trainer' ? 'text-emerald-700' : 'text-stone-400'}`}>
                     <BrainIcon className="w-6 h-6" />
-                    <span className="text-[10px] font-bold uppercase">Quiz</span>
+                    <span className="text-[10px] font-bold uppercase tracking-tighter">Practice</span>
+                </button>
+                <button onClick={() => setActiveSection('settings')} className={`flex flex-col items-center gap-1 transition-colors ${activeSection === 'settings' ? 'text-emerald-700' : 'text-stone-400'}`}>
+                    <SettingsIcon className="w-6 h-6" />
+                    <span className="text-[10px] font-bold uppercase tracking-tighter">Settings</span>
                 </button>
             </div>
 

@@ -26,4 +26,4 @@ export interface UserDocument {
   targetLanguage: string;
 }
 
-export type AppSection = 'reader' | 'wordbank' | 'trainer';
+export type AppSection = 'reader' | 'wordbank' | 'trainer' | 'settings';
