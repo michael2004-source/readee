@@ -14,4 +14,15 @@ export interface SavedWord {
   translation: string;
   sourceLang: string;
   targetLang: string;
+  timestamp: number;
 }
+
+export interface UserDocument {
+  id: string;
+  fileName: string;
+  fileContent: string;
+  scrollPosition: number;
+  lastOpened: number;
+}
+
+export type AppSection = 'reader' | 'wordbank' | 'trainer';

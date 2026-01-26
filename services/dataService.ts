@@ -1,46 +1,46 @@
 
-// Manages saving and loading user-specific data to localStorage.
-import { SavedWord } from '../types';
+import { SavedWord, UserDocument } from '../types';
 
-export interface UserProgress {
-    fileName: string;
-    fileContent: string;
-    scrollPosition: number;
-}
-
-const getProgressKey = (userEmail: string) => `progress_${userEmail}`;
+const getDocsKey = (userEmail: string) => `docs_${userEmail}`;
 const getWordBankKey = (userEmail: string) => `wordbank_${userEmail}`;
+const getActiveDocKey = (userEmail: string) => `activedoc_${userEmail}`;
 
-export const saveProgress = (userEmail: string, progress: UserProgress) => {
+// Document Functions
+export const getDocuments = (userEmail: string): UserDocument[] => {
     try {
-        const key = getProgressKey(userEmail);
-        localStorage.setItem(key, JSON.stringify(progress));
+        const key = getDocsKey(userEmail);
+        const docsJson = localStorage.getItem(key);
+        return docsJson ? JSON.parse(docsJson) : [];
     } catch (error) {
-        console.error("Failed to save progress:", error);
+        console.error("Failed to get documents:", error);
+        return [];
     }
 };
 
-export const loadProgress = (userEmail: string): UserProgress | null => {
-    try {
-        const key = getProgressKey(userEmail);
-        const progressJson = localStorage.getItem(key);
-        if (progressJson) {
-            return JSON.parse(progressJson) as UserProgress;
-        }
-        return null;
-    } catch (error) {
-        console.error("Failed to load progress:", error);
-        return null;
-    }
+export const saveDocument = (userEmail: string, doc: Omit<UserDocument, 'id' | 'lastOpened'>): UserDocument => {
+    const docs = getDocuments(userEmail);
+    const newDoc: UserDocument = {
+        ...doc,
+        id: crypto.randomUUID(),
+        lastOpened: Date.now()
+    };
+    const updatedDocs = [newDoc, ...docs];
+    localStorage.setItem(getDocsKey(userEmail), JSON.stringify(updatedDocs));
+    return newDoc;
 };
 
-export const clearProgress = (userEmail: string) => {
-    try {
-        const key = getProgressKey(userEmail);
-        localStorage.removeItem(key);
-    } catch (error) {
-        console.error("Failed to clear progress:", error);
-    }
+export const updateDocumentProgress = (userEmail: string, docId: string, scrollPosition: number) => {
+    const docs = getDocuments(userEmail);
+    const updatedDocs = docs.map(d => 
+        d.id === docId ? { ...d, scrollPosition, lastOpened: Date.now() } : d
+    );
+    localStorage.setItem(getDocsKey(userEmail), JSON.stringify(updatedDocs));
+};
+
+export const deleteDocument = (userEmail: string, docId: string) => {
+    const docs = getDocuments(userEmail);
+    const updatedDocs = docs.filter(d => d.id !== docId);
+    localStorage.setItem(getDocsKey(userEmail), JSON.stringify(updatedDocs));
 };
 
 // Word Bank Functions
@@ -55,33 +55,22 @@ export const getWordBank = (userEmail: string): SavedWord[] => {
     }
 };
 
-export const saveWordToBank = (userEmail: string, word: SavedWord): SavedWord[] => {
-    try {
-        const currentBank = getWordBank(userEmail);
-        const isDuplicate = currentBank.some(w => w.text.toLowerCase() === word.text.toLowerCase());
-        
-        if (!isDuplicate) {
-            const updatedBank = [...currentBank, word];
-            const key = getWordBankKey(userEmail);
-            localStorage.setItem(key, JSON.stringify(updatedBank));
-            return updatedBank;
-        }
-        return currentBank;
-    } catch (error) {
-        console.error("Failed to save word to bank:", error);
-        return getWordBank(userEmail);
+export const saveWordToBank = (userEmail: string, word: Omit<SavedWord, 'timestamp'>): SavedWord[] => {
+    const currentBank = getWordBank(userEmail);
+    const isDuplicate = currentBank.some(w => w.text.toLowerCase() === word.text.toLowerCase());
+    
+    if (!isDuplicate) {
+        const newWord = { ...word, timestamp: Date.now() };
+        const updatedBank = [newWord, ...currentBank];
+        localStorage.setItem(getWordBankKey(userEmail), JSON.stringify(updatedBank));
+        return updatedBank;
     }
+    return currentBank;
 };
 
 export const removeWordFromBank = (userEmail: string, text: string): SavedWord[] => {
-     try {
-        const currentBank = getWordBank(userEmail);
-        const updatedBank = currentBank.filter(w => w.text.toLowerCase() !== text.toLowerCase());
-        const key = getWordBankKey(userEmail);
-        localStorage.setItem(key, JSON.stringify(updatedBank));
-        return updatedBank;
-    } catch (error) {
-        console.error("Failed to remove word from bank:", error);
-        return getWordBank(userEmail);
-    }
+    const currentBank = getWordBank(userEmail);
+    const updatedBank = currentBank.filter(w => w.text.toLowerCase() !== text.toLowerCase());
+    localStorage.setItem(getWordBankKey(userEmail), JSON.stringify(updatedBank));
+    return updatedBank;
 };
