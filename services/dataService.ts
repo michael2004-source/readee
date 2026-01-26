@@ -3,7 +3,6 @@ import { SavedWord, UserDocument } from '../types';
 
 const getDocsKey = (userEmail: string) => `docs_${userEmail}`;
 const getWordBankKey = (userEmail: string) => `wordbank_${userEmail}`;
-const getActiveDocKey = (userEmail: string) => `activedoc_${userEmail}`;
 
 // Document Functions
 export const getDocuments = (userEmail: string): UserDocument[] => {
@@ -57,7 +56,10 @@ export const getWordBank = (userEmail: string): SavedWord[] => {
 
 export const saveWordToBank = (userEmail: string, word: Omit<SavedWord, 'timestamp'>): SavedWord[] => {
     const currentBank = getWordBank(userEmail);
-    const isDuplicate = currentBank.some(w => w.text.toLowerCase() === word.text.toLowerCase());
+    const isDuplicate = currentBank.some(w => 
+        w.text.toLowerCase() === word.text.toLowerCase() && 
+        w.targetLang === word.targetLang
+    );
     
     if (!isDuplicate) {
         const newWord = { ...word, timestamp: Date.now() };
@@ -68,9 +70,11 @@ export const saveWordToBank = (userEmail: string, word: Omit<SavedWord, 'timesta
     return currentBank;
 };
 
-export const removeWordFromBank = (userEmail: string, text: string): SavedWord[] => {
+export const removeWordFromBank = (userEmail: string, text: string, targetLang: string): SavedWord[] => {
     const currentBank = getWordBank(userEmail);
-    const updatedBank = currentBank.filter(w => w.text.toLowerCase() !== text.toLowerCase());
+    const updatedBank = currentBank.filter(w => 
+        !(w.text.toLowerCase() === text.toLowerCase() && w.targetLang === targetLang)
+    );
     localStorage.setItem(getWordBankKey(userEmail), JSON.stringify(updatedBank));
     return updatedBank;
 };

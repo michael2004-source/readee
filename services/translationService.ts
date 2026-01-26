@@ -1,34 +1,26 @@
 
-interface MyMemoryResponse {
-    responseData: {
-        translatedText: string;
-    };
-    responseStatus: number;
-    responseDetails?: string;
-}
+import { GoogleGenAI } from "@google/genai";
 
-export const getTranslation = async (text: string, sourceLang: string, targetLang:string): Promise<string> => {
-    try {
-        const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sourceLang}|${targetLang}`);
+export const getTranslation = async (text: string, sourceLang: string, targetLang: string): Promise<string> => {
+  const ai = new GoogleGenAI({ apiKey: (process.env.API_KEY as string) });
+  
+  const prompt = `Translate the following word or phrase from ${sourceLang} to ${targetLang}. 
+  Provide only the translation or a very brief definition if it's an idiom.
+  
+  Text: "${text}"`;
 
-        if (!response.ok) {
-            throw new Error(`Failed to fetch translation. Status: ${response.status}`);
-        }
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: prompt,
+      config: {
+        temperature: 0.1, // Keep it precise
+      }
+    });
 
-        const data: MyMemoryResponse = await response.json();
-
-        if (data.responseStatus === 200 && data.responseData.translatedText) {
-            return data.responseData.translatedText;
-        } else {
-            const errorDetails = data.responseDetails || "Unknown error";
-            if (errorDetails.includes("INVALID LANGUAGE PAIR")) {
-                return `Translation from ${sourceLang.toUpperCase()} to ${targetLang.toUpperCase()} is not supported.`;
-            }
-            return "Translation not found.";
-        }
-
-    } catch (error) {
-        console.error("Error fetching translation:", error);
-        throw new Error("Could not fetch translation. Please check your connection.");
-    }
+    return response.text || "No translation found.";
+  } catch (error) {
+    console.error("Gemini Translation Error:", error);
+    return "Error fetching translation.";
+  }
 };

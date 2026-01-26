@@ -15,6 +15,11 @@ interface ReaderSectionProps {
     onCloseDoc: () => void;
     onScroll: () => void;
     viewerRef: React.RefObject<HTMLDivElement>;
+    // Custom selection props
+    selectionRange: { start: number; end: number } | null;
+    onWordPointerDown: (index: number) => void;
+    onWordPointerEnter: (index: number) => void;
+    onSelectionEnd: (e: React.PointerEvent) => void;
 }
 
 const ReaderSection: React.FC<ReaderSectionProps> = ({
@@ -26,7 +31,11 @@ const ReaderSection: React.FC<ReaderSectionProps> = ({
     onDeleteDoc,
     onCloseDoc,
     onScroll,
-    viewerRef
+    viewerRef,
+    selectionRange,
+    onWordPointerDown,
+    onWordPointerEnter,
+    onSelectionEnd
 }) => {
     const activeDoc = documents.find(d => d.id === activeDocId);
 
@@ -49,6 +58,10 @@ const ReaderSection: React.FC<ReaderSectionProps> = ({
                     content={activeDoc.fileContent} 
                     scrollRef={viewerRef} 
                     onScroll={onScroll} 
+                    selectionRange={selectionRange}
+                    onWordPointerDown={onWordPointerDown}
+                    onWordPointerEnter={onWordPointerEnter}
+                    onSelectionEnd={onSelectionEnd}
                 />
             </div>
         );

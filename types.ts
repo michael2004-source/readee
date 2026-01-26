@@ -23,6 +23,7 @@ export interface UserDocument {
   fileContent: string;
   scrollPosition: number;
   lastOpened: number;
+  targetLanguage: string;
 }
 
 export type AppSection = 'reader' | 'wordbank' | 'trainer';
