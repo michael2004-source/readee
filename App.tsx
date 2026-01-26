@@ -20,9 +20,10 @@ const App: React.FC = () => {
     const [activeSection, setActiveSection] = useState<AppSection>('reader');
     const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
 
-    // Global Study Language State
-    const [targetLanguage, setTargetLanguage] = useState<string>('es');
-    const [sourceLanguage, setSourceLanguage] = useState<string>('en');
+    // Study Language = Language of the document (e.g., Spanish)
+    const [studyLanguage, setStudyLanguage] = useState<string>('es');
+    // Translation Language = Language for the definitions (e.g., English)
+    const [translationLanguage, setTranslationLanguage] = useState<string>('en');
 
     // Data State
     const [allDocuments, setAllDocuments] = useState<UserDocument[]>([]);
@@ -71,34 +72,34 @@ const App: React.FC = () => {
 
     // Derived States (Filtered by Language)
     const filteredDocuments = useMemo(() => 
-        allDocuments.filter(doc => doc.targetLanguage === targetLanguage), 
-    [allDocuments, targetLanguage]);
+        allDocuments.filter(doc => doc.targetLanguage === studyLanguage), 
+    [allDocuments, studyLanguage]);
 
     const filteredWordBank = useMemo(() => 
-        allWords.filter(word => word.targetLang === targetLanguage), 
-    [allWords, targetLanguage]);
+        allWords.filter(word => word.targetLang === studyLanguage), 
+    [allWords, studyLanguage]);
 
     const activeDoc = useMemo(() => 
         allDocuments.find(d => d.id === activeDocId), 
     [allDocuments, activeDocId]);
 
-    // Safety: If target language changes, close the doc if it doesn't match
+    // Safety: If study language changes, close the doc if it doesn't match
     useEffect(() => {
-        if (activeDoc && activeDoc.targetLanguage !== targetLanguage) {
+        if (activeDoc && activeDoc.targetLanguage !== studyLanguage) {
             setActiveDocId(null);
             setSelectionRange(null);
             setPopover(p => ({ ...p, position: null }));
         }
-    }, [targetLanguage, activeDoc]);
+    }, [studyLanguage, activeDoc]);
 
     // List of all languages user is currently studying
     const studiedLanguages = useMemo(() => {
         const langs = new Set<string>();
         allDocuments.forEach(d => langs.add(d.targetLanguage));
         allWords.forEach(w => langs.add(w.targetLang));
-        langs.add(targetLanguage); // Always include current target
+        langs.add(studyLanguage); 
         return Array.from(langs);
-    }, [allDocuments, allWords, targetLanguage]);
+    }, [allDocuments, allWords, studyLanguage]);
 
     // Document Handlers
     const handleUpload = async (file: File) => {
@@ -115,7 +116,7 @@ const App: React.FC = () => {
                 fileName: file.name,
                 fileContent: content,
                 scrollPosition: 0,
-                targetLanguage: targetLanguage
+                targetLanguage: studyLanguage
             });
             setAllDocuments(dataService.getDocuments(currentUser));
             setActiveDocId(newDoc.id);
@@ -162,31 +163,34 @@ const App: React.FC = () => {
             return;
         }
         const updated = dataService.saveWordToBank(currentUser, {
-            text, translation, sourceLang: sourceLanguage, targetLang: targetLanguage
+            text, translation, sourceLang: translationLanguage, targetLang: studyLanguage
         });
         setAllWords(updated);
     };
 
     const handleRemoveWord = (text: string) => {
         if (!currentUser) return;
-        const updated = dataService.removeWordFromBank(currentUser, text, targetLanguage);
+        const updated = dataService.removeWordFromBank(currentUser, text, studyLanguage);
         setAllWords(updated);
     };
 
     // Translation Handlers
     useEffect(() => {
         const fetchTranslation = async () => {
-            if (popover.text && popover.isLoading) {
+            if (popover.text) {
+                // If translationLanguage changes while popover is open, re-trigger loading
+                setPopover(p => ({ ...p, isLoading: true, translation: null }));
                 try {
-                    const trans = await getTranslation(popover.text, sourceLanguage, targetLanguage);
+                    // sourceLang: from book language, targetLang: to native language
+                    const trans = await getTranslation(popover.text, studyLanguage, translationLanguage);
                     setPopover(p => p.text ? { ...p, translation: trans, isLoading: false } : p);
                 } catch (err) {
                     setPopover(p => ({ ...p, translation: 'Error fetching translation', isLoading: false }));
                 }
             }
         };
-        fetchTranslation();
-    }, [popover.text, popover.isLoading, sourceLanguage, targetLanguage]);
+        if (popover.text) fetchTranslation();
+    }, [popover.text, translationLanguage, studyLanguage]);
 
     // Custom Selection Logic
     const tokens = useMemo(() => activeDoc?.fileContent.split(/(\s+)/) || [], [activeDoc]);
@@ -241,17 +245,17 @@ const App: React.FC = () => {
     return (
         <div className="min-h-screen bg-stone-50 flex flex-col font-sans">
             {/* Header */}
-            <header className="bg-white border-b border-stone-200 sticky top-0 z-30">
+            <header className="bg-white border-b border-stone-200 sticky top-0 z-30 shadow-sm">
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <div className="w-8 h-8 bg-emerald-700 rounded-lg flex items-center justify-center">
                             <BookOpenIcon className="w-5 h-5 text-white" />
                         </div>
                         <div className="flex flex-col ml-1">
-                            <h1 className="text-lg font-bold text-stone-800 leading-tight hidden sm:block">Interactive Reader</h1>
+                            <h1 className="text-lg font-bold text-stone-800 leading-tight hidden sm:block">Linguist Reader</h1>
                             <div className="flex items-center gap-1.5">
-                                <span className="flex w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
-                                <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Workspace: {targetLanguage.toUpperCase()}</span>
+                                <span className="flex w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse"></span>
+                                <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{studyLanguage.toUpperCase()} Workspace</span>
                             </div>
                         </div>
                     </div>
@@ -265,8 +269,12 @@ const App: React.FC = () => {
                     <div className="flex items-center gap-4">
                         <div className="hidden lg:flex items-center gap-4 border-l border-stone-200 pl-4">
                              <div className="flex items-center gap-2">
-                                <span className="text-xs font-bold text-stone-400 uppercase">Studying</span>
-                                <LanguageSelector label="" selectedLanguage={targetLanguage} onLanguageChange={setTargetLanguage} />
+                                <span className="text-xs font-bold text-stone-400 uppercase">Book Language</span>
+                                <LanguageSelector label="" selectedLanguage={studyLanguage} onLanguageChange={setStudyLanguage} />
+                             </div>
+                             <div className="flex items-center gap-2">
+                                <span className="text-xs font-bold text-stone-400 uppercase">Translate To</span>
+                                <LanguageSelector label="" selectedLanguage={translationLanguage} onLanguageChange={setTranslationLanguage} />
                              </div>
                         </div>
                         {currentUser ? (
@@ -277,16 +285,17 @@ const App: React.FC = () => {
                     </div>
                 </div>
                 
-                {/* Secondary Header for specific context */}
-                <div className="bg-stone-50 border-t border-stone-200 lg:hidden">
-                    <div className="container mx-auto px-4 h-12 flex items-center justify-between">
+                {/* Secondary Header for mobile context */}
+                <div className="bg-stone-50 border-t border-stone-200 lg:hidden overflow-x-auto no-scrollbar">
+                    <div className="container mx-auto px-4 h-12 flex items-center gap-6 whitespace-nowrap">
                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-bold text-stone-400 uppercase">Studying</span>
-                            <LanguageSelector label="" selectedLanguage={targetLanguage} onLanguageChange={setTargetLanguage} />
+                            <span className="text-[10px] font-bold text-stone-400 uppercase">Studying:</span>
+                            <LanguageSelector label="" selectedLanguage={studyLanguage} onLanguageChange={setStudyLanguage} />
                          </div>
-                        {activeSection === 'reader' && activeDocId && (
-                           <LanguageSelector label="Translate to:" selectedLanguage={sourceLanguage} onLanguageChange={setSourceLanguage} />
-                        )}
+                         <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-bold text-stone-400 uppercase">To:</span>
+                            <LanguageSelector label="" selectedLanguage={translationLanguage} onLanguageChange={setTranslationLanguage} />
+                         </div>
                     </div>
                 </div>
             </header>
@@ -301,16 +310,16 @@ const App: React.FC = () => {
 
                 {activeSection === 'reader' && (
                     <div className="flex flex-col gap-6">
-                        {/* Quick Language Summary (Only when no doc open) */}
+                        {/* Quick Workspace Switcher */}
                         {!activeDocId && (
                             <div className="flex items-center gap-3 overflow-x-auto pb-2 no-scrollbar">
                                 {studiedLanguages.map(lang => (
                                     <button 
                                         key={lang}
-                                        onClick={() => setTargetLanguage(lang)}
-                                        className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${targetLanguage === lang ? 'bg-emerald-700 text-white border-emerald-700' : 'bg-white text-stone-600 border-stone-200 hover:border-emerald-400'}`}
+                                        onClick={() => setStudyLanguage(lang)}
+                                        className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${studyLanguage === lang ? 'bg-emerald-700 text-white border-emerald-700' : 'bg-white text-stone-600 border-stone-200 hover:border-emerald-400'}`}
                                     >
-                                        {lang.toUpperCase()} Workspace
+                                        {lang.toUpperCase()} Books
                                     </button>
                                 ))}
                             </div>
@@ -339,7 +348,7 @@ const App: React.FC = () => {
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <BookmarkIcon className="w-5 h-5 text-emerald-700" />
-                                <h2 className="text-xl font-bold text-stone-800">{targetLanguage.toUpperCase()} Vocabulary</h2>
+                                <h2 className="text-xl font-bold text-stone-800">{studyLanguage.toUpperCase()} Learned Vocabulary</h2>
                             </div>
                         </div>
                         <WordBankSection words={filteredWordBank} onRemove={handleRemoveWord} />
@@ -349,8 +358,8 @@ const App: React.FC = () => {
                 {activeSection === 'trainer' && (
                     <div className="flex flex-col gap-6">
                         <div className="text-center mb-4">
-                            <h2 className="text-2xl font-bold text-stone-800">Review {targetLanguage.toUpperCase()} Words</h2>
-                            <p className="text-stone-500">Practice your recently saved vocabulary from this workspace.</p>
+                            <h2 className="text-2xl font-bold text-stone-800">Practice {studyLanguage.toUpperCase()}</h2>
+                            <p className="text-stone-500">Master the words you've encountered in your readings.</p>
                         </div>
                         <VocabTrainerSection words={filteredWordBank} />
                     </div>
@@ -361,19 +370,19 @@ const App: React.FC = () => {
             <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 z-40 px-6 h-16 flex items-center justify-between shadow-[0_-4px_10px_rgba(0,0,0,0.03)]">
                 <button onClick={() => setActiveSection('reader')} className={`flex flex-col items-center gap-1 ${activeSection === 'reader' ? 'text-emerald-700' : 'text-stone-400'}`}>
                     <BookOpenIcon className="w-6 h-6" />
-                    <span className="text-[10px] font-bold">Reader</span>
+                    <span className="text-[10px] font-bold uppercase">Library</span>
                 </button>
                 <button onClick={() => setActiveSection('wordbank')} className={`flex flex-col items-center gap-1 ${activeSection === 'wordbank' ? 'text-emerald-700' : 'text-stone-400'}`}>
                     <BookmarkIcon className="w-6 h-6" />
-                    <span className="text-[10px] font-bold">Bank</span>
+                    <span className="text-[10px] font-bold uppercase">Bank</span>
                 </button>
                 <button onClick={() => setActiveSection('trainer')} className={`flex flex-col items-center gap-1 ${activeSection === 'trainer' ? 'text-emerald-700' : 'text-stone-400'}`}>
                     <BrainIcon className="w-6 h-6" />
-                    <span className="text-[10px] font-bold">Practice</span>
+                    <span className="text-[10px] font-bold uppercase">Quiz</span>
                 </button>
             </div>
 
-            {/* Modals & Overlays */}
+            {/* Translation Popover */}
             {popover.position && popover.text && (
                 <TranslationPopover
                     text={popover.text}
@@ -386,6 +395,8 @@ const App: React.FC = () => {
                     }}
                     onSave={handleSaveWord}
                     isSaved={filteredWordBank.some(w => w.text.toLowerCase() === popover.text?.toLowerCase())}
+                    translationLanguage={translationLanguage}
+                    onTranslationLanguageChange={setTranslationLanguage}
                 />
             )}
 

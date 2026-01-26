@@ -6,6 +6,7 @@ interface LanguageSelectorProps {
     label?: string;
     selectedLanguage: string;
     onLanguageChange: (languageCode: string) => void;
+    minimal?: boolean;
 }
 
 const LANGUAGES = [
@@ -24,7 +25,23 @@ const LANGUAGES = [
     { code: 'zh-CN', name: 'Chinese' },
 ];
 
-const LanguageSelector: React.FC<LanguageSelectorProps> = ({ label, selectedLanguage, onLanguageChange }) => {
+const LanguageSelector: React.FC<LanguageSelectorProps> = ({ label, selectedLanguage, onLanguageChange, minimal = false }) => {
+    if (minimal) {
+        return (
+            <select
+                value={selectedLanguage}
+                onChange={(e) => onLanguageChange(e.target.value)}
+                className="bg-transparent text-stone-600 text-[11px] font-bold uppercase tracking-tight focus:outline-none cursor-pointer hover:text-emerald-700 transition-colors"
+            >
+                {LANGUAGES.map(({ code, name }) => (
+                    <option key={code} value={code} className="bg-white text-stone-900 font-sans normal-case">
+                        {name}
+                    </option>
+                ))}
+            </select>
+        );
+    }
+
     return (
         <div className="flex items-center space-x-2">
             {label && <label htmlFor={`language-select-${label}`} className="text-sm font-medium text-stone-600 shrink-0">{label}</label>}
@@ -33,7 +50,7 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({ label, selectedLang
                 id={`language-select-${label}`}
                 value={selectedLanguage}
                 onChange={(e) => onLanguageChange(e.target.value)}
-                className="bg-white border border-stone-200 text-stone-900 text-xs font-bold rounded-lg focus:ring-emerald-700 focus:border-emerald-700 block w-full p-1.5 transition-all"
+                className="bg-white border border-stone-200 text-stone-900 text-xs font-bold rounded-lg focus:ring-emerald-700 focus:border-emerald-700 block w-full p-1.5 transition-all shadow-sm"
             >
                 {LANGUAGES.map(({ code, name }) => (
                     <option key={code} value={code}>
