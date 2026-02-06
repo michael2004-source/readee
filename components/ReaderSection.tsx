@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { UserDocument } from '../types';
-import FileUpload from './FileUpload';
-import DocumentViewer from './DocumentViewer';
-import { BookOpenIcon, TrashIcon } from './icons';
+import { UserDocument } from '../types.ts';
+import FileUpload from './FileUpload.tsx';
+import DocumentViewer from './DocumentViewer.tsx';
+import { BookOpenIcon, TrashIcon } from './icons.tsx';
 
 interface ReaderSectionProps {
     documents: UserDocument[];

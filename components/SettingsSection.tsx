@@ -1,7 +1,7 @@
 
 import React from 'react';
-import LanguageSelector from './LanguageSelector';
-import { SettingsIcon, GlobeIcon, BookOpenIcon } from './icons';
+import LanguageSelector from './LanguageSelector.tsx';
+import { SettingsIcon, GlobeIcon, BookOpenIcon } from './icons.tsx';
 
 interface SettingsSectionProps {
     studyLanguage: string;
@@ -29,7 +29,7 @@ const SettingsSection: React.FC<SettingsSectionProps> = ({
             </div>
 
             <div className="p-8 space-y-8">
-                {/* Study Language Setting */}
+                {/* Language Settings */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="flex-grow">
                         <div className="flex items-center gap-2 mb-1">
@@ -48,7 +48,6 @@ const SettingsSection: React.FC<SettingsSectionProps> = ({
 
                 <div className="h-px bg-stone-100 w-full"></div>
 
-                {/* Translation Language Setting */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="flex-grow">
                         <div className="flex items-center gap-2 mb-1">
@@ -67,7 +66,7 @@ const SettingsSection: React.FC<SettingsSectionProps> = ({
             </div>
 
             <div className="p-6 bg-stone-50 border-t border-stone-100">
-                <p className="text-xs text-stone-400 text-center italic">Settings are automatically saved to your local profile.</p>
+                <p className="text-xs text-stone-400 text-center italic">Settings are automatically saved to your browser.</p>
             </div>
         </div>
     );

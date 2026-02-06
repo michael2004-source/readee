@@ -1,80 +1,83 @@
 
-import { SavedWord, UserDocument } from '../types';
+import { 
+    collection, 
+    doc, 
+    getDocs, 
+    setDoc, 
+    updateDoc, 
+    deleteDoc,
+    serverTimestamp,
+    orderBy,
+    query,
+    where
+} from "firebase/firestore";
+import { db } from "./firebase.ts";
+import { SavedWord, UserDocument } from '../types.ts';
 
-const getDocsKey = (userEmail: string) => `docs_${userEmail}`;
-const getWordBankKey = (userEmail: string) => `wordbank_${userEmail}`;
+const getDocsCollection = (userId: string) => collection(db, 'users', userId, 'documents');
+const getWordBankCollection = (userId: string) => collection(db, 'users', userId, 'wordbank');
 
 // Document Functions
-export const getDocuments = (userEmail: string): UserDocument[] => {
+export const getDocuments = async (userId: string): Promise<UserDocument[]> => {
     try {
-        const key = getDocsKey(userEmail);
-        const docsJson = localStorage.getItem(key);
-        return docsJson ? JSON.parse(docsJson) : [];
+        const docsCollection = getDocsCollection(userId);
+        const q = query(docsCollection, orderBy('lastOpened', 'desc'));
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as UserDocument));
     } catch (error) {
         console.error("Failed to get documents:", error);
         return [];
     }
 };
 
-export const saveDocument = (userEmail: string, doc: Omit<UserDocument, 'id' | 'lastOpened'>): UserDocument => {
-    const docs = getDocuments(userEmail);
-    const newDoc: UserDocument = {
-        ...doc,
-        id: crypto.randomUUID(),
+export const saveDocument = async (userId: string, docData: Omit<UserDocument, 'id' | 'lastOpened'>): Promise<UserDocument> => {
+    const newDocRef = doc(getDocsCollection(userId));
+    const newDoc: Omit<UserDocument, 'id'> = {
+        ...docData,
         lastOpened: Date.now()
     };
-    const updatedDocs = [newDoc, ...docs];
-    localStorage.setItem(getDocsKey(userEmail), JSON.stringify(updatedDocs));
-    return newDoc;
+    await setDoc(newDocRef, newDoc);
+    return { ...newDoc, id: newDocRef.id };
 };
 
-export const updateDocumentProgress = (userEmail: string, docId: string, scrollPosition: number) => {
-    const docs = getDocuments(userEmail);
-    const updatedDocs = docs.map(d => 
-        d.id === docId ? { ...d, scrollPosition, lastOpened: Date.now() } : d
-    );
-    localStorage.setItem(getDocsKey(userEmail), JSON.stringify(updatedDocs));
+export const updateDocumentProgress = async (userId: string, docId: string, scrollPosition: number) => {
+    const docRef = doc(getDocsCollection(userId), docId);
+    await updateDoc(docRef, { scrollPosition, lastOpened: Date.now() });
 };
 
-export const deleteDocument = (userEmail: string, docId: string) => {
-    const docs = getDocuments(userEmail);
-    const updatedDocs = docs.filter(d => d.id !== docId);
-    localStorage.setItem(getDocsKey(userEmail), JSON.stringify(updatedDocs));
+export const deleteDocument = async (userId: string, docId: string) => {
+    const docRef = doc(getDocsCollection(userId), docId);
+    await deleteDoc(docRef);
 };
 
 // Word Bank Functions
-export const getWordBank = (userEmail: string): SavedWord[] => {
+export const getWordBank = async (userId: string): Promise<SavedWord[]> => {
     try {
-        const key = getWordBankKey(userEmail);
-        const bankJson = localStorage.getItem(key);
-        return bankJson ? JSON.parse(bankJson) : [];
+        const wordBankCollection = getWordBankCollection(userId);
+        const q = query(wordBankCollection, orderBy('timestamp', 'desc'));
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => doc.data() as SavedWord);
     } catch (error) {
         console.error("Failed to get word bank:", error);
         return [];
     }
 };
 
-export const saveWordToBank = (userEmail: string, word: Omit<SavedWord, 'timestamp'>): SavedWord[] => {
-    const currentBank = getWordBank(userEmail);
-    const isDuplicate = currentBank.some(w => 
-        w.text.toLowerCase() === word.text.toLowerCase() && 
-        w.targetLang === word.targetLang
-    );
+export const saveWordToBank = async (userId: string, word: Omit<SavedWord, 'timestamp'>): Promise<SavedWord[]> => {
+    const wordBankCollection = getWordBankCollection(userId);
+    // Use text and targetLang as a unique identifier for the word
+    const docId = `${word.text.toLowerCase()}_${word.targetLang}`;
+    const wordRef = doc(wordBankCollection, docId);
+
+    const newWord = { ...word, timestamp: Date.now() };
+    await setDoc(wordRef, newWord, { merge: true }); // Use set with merge to create or update
     
-    if (!isDuplicate) {
-        const newWord = { ...word, timestamp: Date.now() };
-        const updatedBank = [newWord, ...currentBank];
-        localStorage.setItem(getWordBankKey(userEmail), JSON.stringify(updatedBank));
-        return updatedBank;
-    }
-    return currentBank;
+    return getWordBank(userId);
 };
 
-export const removeWordFromBank = (userEmail: string, text: string, targetLang: string): SavedWord[] => {
-    const currentBank = getWordBank(userEmail);
-    const updatedBank = currentBank.filter(w => 
-        !(w.text.toLowerCase() === text.toLowerCase() && w.targetLang === targetLang)
-    );
-    localStorage.setItem(getWordBankKey(userEmail), JSON.stringify(updatedBank));
-    return updatedBank;
+export const removeWordFromBank = async (userId: string, text: string, targetLang: string): Promise<SavedWord[]> => {
+    const docId = `${text.toLowerCase()}_${targetLang}`;
+    const wordRef = doc(getWordBankCollection(userId), docId);
+    await deleteDoc(wordRef);
+    return getWordBank(userId);
 };

@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
-import { SavedWord } from '../types';
-import { TrashIcon, SearchIcon } from './icons';
+import { SavedWord } from '../types.ts';
+import { exportWordsToCsv } from '../utils/exportUtils.ts';
+import { TrashIcon, SearchIcon, DownloadIcon } from './icons.tsx';
 
 interface WordBankSectionProps {
     words: SavedWord[];
@@ -16,20 +17,36 @@ const WordBankSection: React.FC<WordBankSectionProps> = ({ words, onRemove }) =>
         word.translation.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    const handleExport = () => {
+        exportWordsToCsv(words);
+    };
+
     return (
         <div className="max-w-4xl mx-auto w-full bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
             <div className="p-6 border-b border-stone-100">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <h2 className="text-xl font-bold text-stone-800">My Vocabulary Bank</h2>
-                    <div className="relative">
-                        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
-                        <input 
-                            type="text" 
-                            placeholder="Search words..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-10 pr-4 py-2 bg-stone-50 border border-stone-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none w-full md:w-64"
-                        />
+                     <div className="flex-grow">
+                        <h2 className="text-xl font-bold text-stone-800">My Vocabulary Bank</h2>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="relative">
+                            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+                            <input 
+                                type="text" 
+                                placeholder="Search words..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="pl-10 pr-4 py-2 bg-stone-50 border border-stone-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none w-full md:w-52"
+                            />
+                        </div>
+                        <button 
+                            onClick={handleExport}
+                            disabled={words.length === 0}
+                            className="flex items-center gap-2 px-4 py-2 bg-emerald-700 text-white text-xs font-bold rounded-lg hover:bg-emerald-800 transition-colors shadow-sm shadow-emerald-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <DownloadIcon className="w-4 h-4" />
+                            <span>Export to CSV</span>
+                        </button>
                     </div>
                 </div>
             </div>

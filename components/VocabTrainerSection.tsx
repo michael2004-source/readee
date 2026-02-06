@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
-import { SavedWord } from '../types';
-import { BrainIcon } from './icons';
+import { SavedWord } from '../types.ts';
+import { BrainIcon } from './icons.tsx';
 
 interface VocabTrainerSectionProps {
     words: SavedWord[];

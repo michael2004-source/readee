@@ -1,4 +1,6 @@
 
+import { User } from 'firebase/auth';
+
 export interface PopoverState {
   text: string | null;
   translation: string | null;
@@ -24,6 +26,12 @@ export interface UserDocument {
   scrollPosition: number;
   lastOpened: number;
   targetLanguage: string;
+}
+
+export interface FirebaseUser {
+    uid: string;
+    displayName: string | null;
+    photoURL: string | null;
 }
 
 export type AppSection = 'reader' | 'wordbank' | 'trainer' | 'settings';

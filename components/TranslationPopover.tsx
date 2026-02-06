@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useClickOutside } from '../hooks/useClickOutside';
-import { CloseIcon, BookmarkIcon, GlobeIcon } from './icons';
-import LanguageSelector from './LanguageSelector';
+import { useClickOutside } from '../hooks/useClickOutside.ts';
+import { CloseIcon, BookmarkIcon, GlobeIcon } from './icons.tsx';
+import LanguageSelector from './LanguageSelector.tsx';
 
 interface TranslationPopoverProps {
     text: string;
